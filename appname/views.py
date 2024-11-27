@@ -548,7 +548,7 @@ class IlacViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(medications)
         if page is not None:
             # Sayfalı veriyi serialize et
-            serializer = IlacListSerializer(medications, many=True)
+            serializer = IlacListSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
         # Sayfalama yoksa tüm veriyi döndür
