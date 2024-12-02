@@ -2863,6 +2863,7 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+from rest_framework.exceptions import NotFound
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by('id')
@@ -2912,6 +2913,24 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(product_queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    @action(detail=False, methods=['get'], url_path='product-detail')
+    def product_detail(self, request):
+        # Query parametresinden slug'ı al
+        slug = request.query_params.get('slug')
+
+        if not slug:
+            return Response({"error": "Slug parametresi gerekli."}, status=400)
+
+        try:
+            # Slug'a göre ürünü al
+            product = Product.objects.get(slug=slug)
+        except Product.DoesNotExist:
+            raise NotFound("Belirtilen slug ile eşleşen bir ürün bulunamadı.")
+
+        # Serializer kullanarak ürünü döndür
+        serializer = self.get_serializer(product)
+        return Response(serializer.data)
 
 
 
