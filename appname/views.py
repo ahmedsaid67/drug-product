@@ -2822,7 +2822,7 @@ class HastalikHemYasaHemKiloyaBagliAzalanDozViewSet(viewsets.ModelViewSet,BaseOl
 # ------ besin takviyeleri ------
 
 from .models import Supplement,ProductCategory,Product
-from .serializers import SupplementSerializers,ProductCategorySerializers,ProductSerializers
+from .serializers import SupplementSerializers,ProductCategorySerializers,ProductSerializers,ProductSecondSerializers
 
 
 
@@ -2929,7 +2929,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise NotFound("Belirtilen slug ile eşleşen bir ürün bulunamadı.")
 
         # Serializer kullanarak ürünü döndür
-        serializer = self.get_serializer(product)
+        serializer = ProductSecondSerializers(product)
         return Response(serializer.data)
 
 
