@@ -124,6 +124,19 @@ class IlacDetailSerializer(serializers.ModelSerializer):
 
 
 
+class FormSecondSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ['id', 'name', 'slug']
+
+class IlacKullanımTalimatiSerializers(serializers.ModelSerializer):
+    ilac_form = FormSecondSerializers(read_only=True)
+    class Meta:
+        model = Ilac
+        fields = ['id', 'name', 'etken_madde', 'slug', 'document', 'ilac_form',]
+
+
+
 
 class IlacListSerializer(serializers.ModelSerializer):
     hassasiyet_turu = HassasiyetTuruNameSerializer(read_only=True)
