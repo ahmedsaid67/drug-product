@@ -269,6 +269,29 @@ class ProductSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+class SupplementSecondSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Supplement
+        fields = ['name', 'slug']
+
+class ProductCategorySecondSerializers(serializers.ModelSerializer):
+    supplement=SupplementSecondSerializers()
+    class Meta:
+        model = ProductCategory
+        fields = ['name', 'slug','supplement']
+
+
+class ProductSecondSerializers(serializers.ModelSerializer):
+    product_category=ProductCategorySecondSerializers()
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
+
+
 # ------ hatırlatıcılar -----
 
 from .models import Hatirlatici, HatirlaticiSaati, Bildirim
