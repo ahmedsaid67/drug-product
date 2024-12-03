@@ -458,7 +458,7 @@ class FormViewSet(viewsets.ModelViewSet):
 
 
 from .models import Ilac
-from .serializers import IlacListSerializer,IlacDetailSerializer
+from .serializers import IlacListSerializer,IlacDetailSerializer,IlacKullanımTalimatiSerializers
 
 class IlacViewSet(viewsets.ModelViewSet):
     queryset = Ilac.objects.all().select_related('ilac_kategori', 'hassasiyet_turu','ilac_form').prefetch_related('hastaliklar').order_by('id')
@@ -648,6 +648,25 @@ class IlacViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': f'An error occurred while processing the file: {str(e)}'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    @action(detail=False, methods=['get'], url_path='kullanim-talimati')
+    def kullanim_talimati(self, request):
+        slug = request.query_params.get('slug')
+
+        if not slug:
+            return Response({"error": "Slug parametresi gerekli."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # İlgili ilaç objesini al
+            medication = Ilac.objects.get(slug=slug)
+        except Ilac.DoesNotExist:
+            raise NotFound("Belirtilen slug ile eşleşen bir ilaç bulunamadı.")
+
+            # Serializer kullanarak veriyi serileştir
+        serializer = IlacKullanımTalimatiSerializers(medication)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 from .models import YasDoz
