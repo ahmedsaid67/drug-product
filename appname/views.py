@@ -660,12 +660,12 @@ class IlacViewSet(viewsets.ModelViewSet):
 
         try:
             # İlgili ilaç objesini al
-            medication = Ilac.objects.get(slug=slug)
+            medication = Ilac.objects.select_related('ilac_form').get(slug=slug)
         except Ilac.DoesNotExist:
             raise NotFound("Belirtilen slug ile eşleşen bir ilaç bulunamadı.")
 
             # Serializer kullanarak veriyi serileştir
-        serializer = IlacKullanımTalimatiSerializers(medication)
+        serializer = IlacKullanımTalimatiSerializers(medication, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
