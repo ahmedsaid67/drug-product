@@ -458,7 +458,7 @@ class FormViewSet(viewsets.ModelViewSet):
 
 
 from .models import Ilac
-from .serializers import IlacListSerializer,IlacDetailSerializer,IlacKullanımTalimatiSerializers
+from .serializers import IlacListSerializer,IlacDetailSerializer,IlacKullanımTalimatiSerializers,IlacAramaSerializer,IlacAramaDetailSerializer
 
 class IlacViewSet(viewsets.ModelViewSet):
     queryset = Ilac.objects.all().select_related('ilac_kategori', 'hassasiyet_turu','ilac_form').prefetch_related('hastaliklar').order_by('id')
@@ -667,6 +667,51 @@ class IlacViewSet(viewsets.ModelViewSet):
             # Serializer kullanarak veriyi serileştir
         serializer = IlacKullanımTalimatiSerializers(medication, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+
+
+    @action(detail=False, methods=['get'], url_path='ilac-arama')
+    def ilac_arama(self, request):
+        # Retrieve medications with related `ilac_form` data
+        medication = Ilac.objects.select_related('ilac_form').all()
+
+        # Serialize the data
+        serializer = IlacAramaSerializer(medication, many=True)
+
+        # Return serialized data in the response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='ilac-arama-detail')
+    def ilac_arama_detail(self, request):
+        # Get the slug parameter from the query params
+        slug = request.query_params.get('slug')
+
+        # If slug is missing, return a 400 error
+        if not slug:
+            return Response({"error": "Slug parametresi gerekli."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Retrieve the medication object based on the slug
+            medication = Ilac.objects.select_related('ilac_form', 'hassasiyet_turu').get(slug=slug)
+        except Ilac.DoesNotExist:
+            # Raise a 404 error if the medication is not found
+            raise NotFound("Belirtilen slug ile eşleşen bir ilaç bulunamadı.")
+
+        # Serialize the data
+        serializer = IlacAramaDetailSerializer(medication)
+
+        # Return the serialized data
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
 
 
 from .models import YasDoz
