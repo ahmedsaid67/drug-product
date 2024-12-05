@@ -144,6 +144,31 @@ class IlacKullanımTalimatiSerializers(serializers.ModelSerializer):
         fields = ['id', 'name', 'etken_madde', 'slug', 'document', 'ilac_form',]
 
 
+
+
+
+class IlacAramaSerializer(serializers.ModelSerializer):
+    ilac_form = FormSecondSerializers(read_only=True)
+    class Meta:
+        model = Ilac
+        fields = ['id', 'name', 'slug','ilac_form']
+
+
+class IlacAramaDetailSerializer(serializers.ModelSerializer):
+    hassasiyet_turu = HassasiyetTuruSerializers(read_only=True)
+    ilac_form = FormSecondSerializers(read_only=True)
+
+    class Meta:
+        model = Ilac
+        fields = ['id', 'name', 'etken_madde','slug','ilac_form', 'hassasiyet_turu']
+
+
+
+
+
+
+
+
 class YasDozSerializers(serializers.ModelSerializer):
     #ilac = IlacSerializers(read_only=True)
 
