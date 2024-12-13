@@ -163,7 +163,14 @@ class IlacAramaDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'etken_madde','slug','ilac_form', 'hassasiyet_turu']
 
 
+class IlacDozDetailSerializer(serializers.ModelSerializer):
+    hassasiyet_turu = HassasiyetTuruSerializers(read_only=True)
+    ilac_form = FormSecondSerializers(read_only=True)
+    hastaliklar = HastalikSerializers(many=True, read_only=True)
 
+    class Meta:
+        model = Ilac
+        fields = ['id', 'name', 'etken_madde','slug','ilac_form', 'hassasiyet_turu','hastaliklar']
 
 
 
