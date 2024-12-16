@@ -3262,3 +3262,17 @@ class BildirimViewSet(viewsets.ModelViewSet):
 
         # Tüm bildirimler başarıyla işlendiğinde başarı yanıtı döndürelim
         return Response({"success": True}, status=200)
+
+
+
+
+
+from .serializers import ContactSerializers
+from .models import Contact
+
+class ContactViewSet(viewsets.ModelViewSet):
+    queryset = Contact.objects.all().order_by('id')
+    serializer_class = ContactSerializers
+
+
+
