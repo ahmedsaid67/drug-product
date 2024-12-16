@@ -312,3 +312,18 @@ class Bildirim(models.Model):
     explanations = models.TextField(blank=True, null=True)
     tarih = models.DateField(blank=True, null=True)
     durum = models.BooleanField(default=False)
+
+
+
+
+class Contact(models.Model):
+    name = models.CharField(max_length=250)
+    mail = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
+
