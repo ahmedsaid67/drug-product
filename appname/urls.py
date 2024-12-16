@@ -5,7 +5,7 @@ from .views import CustomAuthToken, CheckToken, UserInfoView, Logout,CustomUserV
     ExplanationDozViewSet,HatalikYasDozViewSet,HastalikKiloDozViewSet,ArtanKiloDozViewSet,AzalanKiloDozViewSet,\
     HastalikArtanKiloDozViewSet,HastalikAzalanKiloDozViewSet,HastalikHemYasaHemKiloyaBagliArtanDozViewSet,\
     HastalikHemYasaHemKiloyaBagliAzalanDozViewSet,SupplementViewSet,ProductCategoryViewSet,ProductViewSet,\
-    CombinedView,HatirlaticiViewSet,HatirlaticiSaatiViewSet,BildirimViewSet
+    CombinedView,HatirlaticiViewSet,HatirlaticiSaatiViewSet,BildirimViewSet,ContactViewSet
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -86,6 +86,9 @@ router_hatirlaticisaati.register(r'reminder-hours', HatirlaticiSaatiViewSet)
 router_bildirim = DefaultRouter()
 router_bildirim.register(r'notifications', BildirimViewSet)
 
+router_contact = DefaultRouter()
+router_contact.register(r'contact', ContactViewSet)
+
 
 urlpatterns = [
 
@@ -122,6 +125,8 @@ urlpatterns = [
     path('', include(router_hatirlatici.urls)),
     path('', include(router_hatirlaticisaati.urls)),
     path('', include(router_bildirim.urls)),
+
+    path('', include(router_contact.urls)),
 
 ]
 
