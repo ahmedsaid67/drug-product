@@ -5,7 +5,7 @@ from .views import CustomAuthToken, CheckToken, UserInfoView, Logout,CustomUserV
     ExplanationDozViewSet,HatalikYasDozViewSet,HastalikKiloDozViewSet,ArtanKiloDozViewSet,AzalanKiloDozViewSet,\
     HastalikArtanKiloDozViewSet,HastalikAzalanKiloDozViewSet,HastalikHemYasaHemKiloyaBagliArtanDozViewSet,\
     HastalikHemYasaHemKiloyaBagliAzalanDozViewSet,SupplementViewSet,ProductCategoryViewSet,ProductViewSet,\
-    CombinedView,HatirlaticiViewSet,HatirlaticiSaatiViewSet,BildirimViewSet,ContactViewSet
+    CombinedView,HatirlaticiViewSet,HatirlaticiSaatiViewSet,BildirimViewSet,ContactViewSet,DeleteUserAPIView
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -127,6 +127,8 @@ urlpatterns = [
     path('', include(router_bildirim.urls)),
 
     path('', include(router_contact.urls)),
+
+    path('delete-user/', DeleteUserAPIView.as_view(), name='delete-user'),
 
 ]
 
