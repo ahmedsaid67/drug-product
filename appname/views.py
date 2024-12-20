@@ -3275,4 +3275,39 @@ class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializers
 
 
+from django.contrib.auth import authenticate
+
+class DeleteUserAPIView(APIView):
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response(
+                {"error": "Email ve şifre alanları zorunludur."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Kullanıcıyı doğrula
+        user = authenticate(email=email, password=password)
+        if not user:
+            return Response(
+                {"error": "Kullanıcı bulunamadı."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Profil silme işlemi
+        if hasattr(user, 'profil'):
+            user.profil.delete()
+
+        # Kullanıcı silme işlemi
+        user.delete()
+
+        return Response(
+            {"message": "Kullanıcı ve profili başarıyla silindi."},
+            status=status.HTTP_200_OK
+        )
+
+
 
