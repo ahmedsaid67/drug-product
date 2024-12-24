@@ -120,7 +120,7 @@ class IlacDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ilac
-        fields = ['id', 'name', 'etken_madde', 'kullanim_uyarisi', 'document', 'ilac_kategori','ilac_form', 'hassasiyet_turu', 'hastaliklar']
+        fields = ['id', 'name', 'etken_madde', 'document', 'ilac_kategori','ilac_form', 'hassasiyet_turu', 'hastaliklar','ne_icin_kullanilir','nedir','baslik']
 
 
 
@@ -171,6 +171,16 @@ class IlacDozDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ilac
         fields = ['id', 'name', 'etken_madde','slug','ilac_form', 'hassasiyet_turu','hastaliklar']
+
+
+
+
+class IlacNedirSerializer(serializers.ModelSerializer):
+    ilac_form = FormSecondSerializers(read_only=True)
+
+    class Meta:
+        model = Ilac
+        fields = ['id', 'name', 'etken_madde','slug','ilac_form', 'nedir','ne_icin_kullanilir','baslik']
 
 
 
