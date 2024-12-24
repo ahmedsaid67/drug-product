@@ -18,10 +18,10 @@ def create_user_profile(sender, instance, created, **kwargs):
         # Create a profile with the user, leaving the photo field empty
         Profile.objects.create(user=instance)
 
-
+"""
 
 def load_json_file(file_path):
-    """Verilen dosya yolundaki JSON dosyasını yükle."""
+
     if os.path.exists(file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             return json.load(file)
@@ -247,3 +247,4 @@ def create_supplements_and_categories(sender, **kwargs):
     else:
         print("ProductCategory tablosu henüz oluşturulmamış.")
 
+"""
