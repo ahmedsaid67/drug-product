@@ -445,10 +445,13 @@ class FormViewSet(viewsets.ModelViewSet):
             # Check existing categories in the database
             existing_categories = set(Form.objects.filter(name__in=names).values_list('name', flat=True))
 
-            # Create new `IlacKategori` instances for names not already in the database
+            # Create new `Form` instances for names not already in the database
             new_names = [name for name in names if name not in existing_categories]
             categories = [Form(name=name) for name in new_names]
-            Form.objects.bulk_create(categories)
+
+            # Save each category individually to ensure the save method is called
+            for category in categories:
+                category.save()  # This triggers the save method to generate slug
 
             return Response({'status': 'Categories created successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -458,7 +461,7 @@ class FormViewSet(viewsets.ModelViewSet):
 
 
 from .models import Ilac
-from .serializers import IlacListSerializer,IlacDetailSerializer,IlacKullanımTalimatiSerializers,IlacAramaSerializer,IlacAramaDetailSerializer,IlacDozDetailSerializer
+from .serializers import IlacListSerializer,IlacDetailSerializer,IlacKullanımTalimatiSerializers,IlacAramaSerializer,IlacAramaDetailSerializer,IlacDozDetailSerializer,IlacNedirSerializer
 
 class IlacViewSet(viewsets.ModelViewSet):
     queryset = Ilac.objects.all().select_related('ilac_kategori', 'hassasiyet_turu','ilac_form').prefetch_related('hastaliklar').order_by('id')
@@ -567,8 +570,8 @@ class IlacViewSet(viewsets.ModelViewSet):
             df = pd.read_excel(file)
 
             # Gerekli sütunlar kontrolü
-            required_columns = ['name', 'durum', 'etken madde', 'ilaç kategori', 'Kullanım Uyarı', 'hassasiyet türü',
-                                'ilaç form', 'hastalıklar', 'Konsantrasyon ml', 'Konsantrasyon mg']
+            required_columns = ['name', 'durum', 'etken madde', 'ilaç kategori', 'hassasiyet türü',
+                                'ilaç form', 'hastalıklar', 'Konsantrasyon ml', 'Konsantrasyon mg', "Başlık", "Nedir", "Ne İçin Kullanılır"]
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response(
@@ -603,13 +606,6 @@ class IlacViewSet(viewsets.ModelViewSet):
                     hassasiyet_turu = None
 
 
-
-
-                # Kullanım Uyarısı alanı boşsa veya NaN ise, boş string ile değiştir
-                kullanim_uyarisi = row.get('Kullanım Uyarı', '')
-                if pd.isna(kullanim_uyarisi):
-                    kullanim_uyarisi = ''
-
                 # Konsantrasyon değerleri NaN mı kontrol et
                 konsantrasyon_ml = row['Konsantrasyon ml']
                 konsantrasyon_mg = row['Konsantrasyon mg']
@@ -626,7 +622,9 @@ class IlacViewSet(viewsets.ModelViewSet):
                     hassasiyet_turu=hassasiyet_turu,
                     kontsantrasyon_ml=konsantrasyon_ml,
                     kontsantrasyon_mg=konsantrasyon_mg,
-                    kullanim_uyarisi=kullanim_uyarisi
+                    baslik=row['Başlık'],
+                    nedir=row["Nedir"],
+                    ne_icin_kullanilir=row["Ne İçin Kullanılır"]
                 )
                 new_ilac.save()  # Önce kaydetmemiz gerekiyor ki ManyToMany alanına hastalıkları ekleyebilelim
 
@@ -648,6 +646,7 @@ class IlacViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': f'An error occurred while processing the file: {str(e)}'},
                             status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
@@ -732,10 +731,27 @@ class IlacViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+    @action(detail=False, methods=['get'], url_path='ilac-nedir')
+    def ilac_nedir(self, request):
+        # Get the slug parameter from the query params
+        slug = request.query_params.get('slug')
 
+        # If slug is missing, return a 400 error
+        if not slug:
+            return Response({"error": "Slug parametresi gerekli."}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            # Retrieve the medication object based on the slug
+            medication = Ilac.objects.select_related('ilac_form').get(slug=slug)
+        except Ilac.DoesNotExist:
+            # Raise a 404 error if the medication is not found
+            raise NotFound("Belirtilen slug ile eşleşen bir ilaç bulunamadı.")
 
+        # Serialize the data
+        serializer = IlacNedirSerializer(medication)
 
+        # Return the serialized data
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
@@ -3020,6 +3036,69 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Serializer kullanarak ürünü döndür
         serializer = ProductSecondSerializers(product)
         return Response(serializer.data)
+
+
+    @action(detail=False, methods=['post'])
+    def bulk_create_from_excel(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file uploaded. Please upload a valid Excel file.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Excel dosyasını oku
+            df = pd.read_excel(file)
+
+            # Gerekli sütunlar kontrolü
+            required_columns = ['title', 'kullanim_sekli', 'ana_kategori', 'alt_kategori', 'durum']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                return Response(
+                    {'error': f'Excel file is missing the following required columns: {", ".join(missing_columns)}'},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+            # Yeni ürünler oluştur
+            records_created = 0
+            for _, row in df.iterrows():
+                try:
+                    # Eğer 'durum' True ise veya 'isim' boşsa atla
+                    if row.get('durum') == True or pd.isna(row.get('title')):
+                        continue
+
+                    # Ana kategori işlemleri
+                    ana_kategori_name = row.get('ana_kategori', '')
+                    ana_kategori = None
+                    if ana_kategori_name:
+                        ana_kategori, _ = Supplement.objects.get_or_create(name=ana_kategori_name)
+
+                    # Alt kategori işlemleri
+                    alt_kategori_name = row.get('alt_kategori', '')
+                    alt_kategori = None
+                    if alt_kategori_name and ana_kategori:
+                        alt_kategori, _ = ProductCategory.objects.get_or_create(
+                            name=alt_kategori_name,
+                            supplement=ana_kategori
+                        )
+
+                    # Yeni ürün oluştur
+                    Product.objects.create(
+                        name=row['title'],
+                        product_category=alt_kategori,
+                        explanation=row['kullanim_sekli'],
+                    )
+                    records_created += 1
+
+                except Exception as e:
+                    return Response({'error': f'Error processing row: {row.to_dict()}, Error: {str(e)}'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'status': 'Products created successfully', 'records_created': records_created},
+                            status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'error': f'An error occurred while processing the file: {str(e)}'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
