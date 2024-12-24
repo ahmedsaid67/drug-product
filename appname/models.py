@@ -75,6 +75,20 @@ class PasswordResetCode(models.Model):
 class IlacKategori(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
     img = models.ImageField(upload_to='ilac_kategori_img',null=True,blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to assign an id if it's a new instance
+            super(IlacKategori, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(IlacKategori, self).save(*args, **kwargs)
+        else:
+            super(IlacKategori, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -88,6 +102,20 @@ class HassasiyetTuru(models.Model):
 
 class Hastalik(models.Model):
     name = models.CharField(max_length=75, null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # Eğer slug boşsa ve yeni bir nesne ise
+        if not self.slug:
+            # Önce nesneyi kaydet (id oluşturmak için)
+            super(Hastalik, self).save(*args, **kwargs)
+            # Slug alanını oluştur ve güncelle
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Tekrar kaydet
+            kwargs.pop('force_insert', None)  # force_insert argümanını kaldır
+            super(Hastalik, self).save(*args, **kwargs)
+        else:
+            super(Hastalik, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -97,14 +125,26 @@ class Form(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     img = models.ImageField(upload_to='form_img', null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to generate an id if it's new
+            super(Form, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(Form, self).save(*args, **kwargs)
+        else:
+            super(Form, self).save(*args, **kwargs)
     def __str__(self):
         return self.name
-
 
 class Ilac(models.Model):
     name = models.CharField(max_length=250, null=True, blank=True)
     etken_madde = models.CharField(max_length=200, null=True, blank=True)
-    kullanim_uyarisi = models.CharField(max_length=300, null=True, blank=True)
     document = models.FileField(upload_to='documents', null=True, blank=True)  # PDF dosyası için alan
     ilac_kategori = models.ForeignKey(IlacKategori, null=True, blank=True, on_delete=models.SET_NULL)
     ilac_form = models.ForeignKey(Form, null=True, blank=True, on_delete=models.SET_NULL)
@@ -112,6 +152,23 @@ class Ilac(models.Model):
     hastaliklar = models.ManyToManyField(Hastalik, related_name="ilaclar")
     kontsantrasyon_ml = models.DecimalField(max_digits=9, decimal_places=4, null=True,blank=True)
     kontsantrasyon_mg = models.DecimalField(max_digits=9, decimal_places=4, null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)  # Slug field
+    baslik = models.CharField(max_length=250, null=True, blank=True)
+    nedir = models.TextField( null=True, blank=True)
+    ne_icin_kullanilir = models.TextField( null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to generate an id if it's a new instance
+            super(Ilac, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(Ilac, self).save(*args, **kwargs)
+        else:
+            super(Ilac, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -239,6 +296,20 @@ class Supplement(models.Model):
     name = models.CharField(max_length=150, null=True, blank=True)
     img = models.ImageField(upload_to='supplement_img', null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)  # Slug field
+
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to assign an id if it's new
+            super(Supplement, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(Supplement, self).save(*args, **kwargs)
+        else:
+            super(Supplement, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -248,7 +319,20 @@ class Supplement(models.Model):
 class ProductCategory(models.Model):
     name = models.CharField(max_length=150, null=True, blank=True)
     supplement = models.ForeignKey(Supplement, null=True, blank=True, on_delete=models.SET_NULL)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)  # Slug field
 
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to assign an id if it's new
+            super(ProductCategory, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(ProductCategory, self).save(*args, **kwargs)
+        else:
+            super(ProductCategory, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -258,6 +342,22 @@ class Product(models.Model):
     product_category = models.ForeignKey(ProductCategory, null=True, blank=True, on_delete=models.SET_NULL)
     explanation = models.TextField(null=True, blank=True)
     satin_al_link = models.TextField(null=True, blank=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    def save(self, *args, **kwargs):
+        # If slug is not set, generate it
+        if not self.slug:
+            # Save the object to assign an id if it's new
+            super(Product, self).save(*args, **kwargs)
+            # Generate the slug using the name and id
+            self.slug = slugify(f"{self.name}-{self.id}")
+            # Save again to update the slug field
+            kwargs.pop('force_insert', None)  # Remove force_insert if present
+            super(Product, self).save(*args, **kwargs)
+        else:
+            super(Product, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
 
 
 # ------ hatırlatıcılar -----
