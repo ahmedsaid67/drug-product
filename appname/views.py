@@ -3050,7 +3050,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             df = pd.read_excel(file)
 
             # Gerekli sütunlar kontrolü
-            required_columns = ['title', 'kullanim_sekli', 'ana_kategori', 'alt_kategori', 'durum']
+            required_columns = ['title', 'kullanim_sekli','ne_ise_yarar_saglik_beyani', 'nedir','ana_kategori', 'alt_kategori', 'durum']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response(
@@ -3085,6 +3085,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                         name=row['title'],
                         product_category=alt_kategori,
                         explanation=row['kullanim_sekli'],
+                        nedir=row['nedir'],
+                        ne_icin_kullanilir=row['ne_ise_yarar_saglik_beyani'],
                     )
                     records_created += 1
 
