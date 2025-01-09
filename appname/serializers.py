@@ -303,10 +303,14 @@ from .models import Supplement,ProductCategory,Product
 
 
 class SupplementSerializers(serializers.ModelSerializer):
+    product_category_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Supplement
         fields = '__all__'
+
+    def get_product_category_count(self, obj):
+        return ProductCategory.objects.filter(supplement=obj).count()
 
 
 class ProductCategorySerializers(serializers.ModelSerializer):
