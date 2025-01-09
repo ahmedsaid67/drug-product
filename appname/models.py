@@ -341,6 +341,8 @@ class Product(models.Model):
     name = models.CharField(max_length=150, null=True, blank=True)
     product_category = models.ForeignKey(ProductCategory, null=True, blank=True, on_delete=models.SET_NULL)
     explanation = models.TextField(null=True, blank=True)
+    nedir = models.TextField(null=True, blank=True)
+    ne_icin_kullanilir = models.TextField(null=True, blank=True)
     satin_al_link = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
     def save(self, *args, **kwargs):
