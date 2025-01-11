@@ -2976,23 +2976,17 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='list-products-by-category-no-paginations')
     def list_products_by_productcategory_no_paginations(self, request):
-        # product_category_id parametresini al
         product_category_id = request.query_params.get('product_category_id')
 
         if not product_category_id:
             return Response({"detail": "product_category_id is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # product_category objesini güvenli bir şekilde getir
         product_category = get_object_or_404(ProductCategory, id=product_category_id)
 
-        # İlgili kategorileri filtrele
-        product = Product.objects.filter(product_category=product_category)
+        # Sadece id ve name alanlarını seç
+        product = Product.objects.filter(product_category=product_category).values('id', 'name')
 
-        # Kategorileri serileştir
-        serializer = self.get_serializer(product, many=True)
-
-        # Serileştirilmiş veriyi döndür
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(product, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='list-products-by-category')
     def list_products_by_productcategory(self, request):
@@ -3005,18 +2999,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Retrieve the product category safely
         product_category = get_object_or_404(ProductCategory, id=product_category_id)
 
-        # Filter products by the selected category
-        product_queryset = Product.objects.filter(product_category=product_category)
+        # Filter products by the selected category and select only id and name
+        product_queryset = Product.objects.filter(product_category=product_category).order_by("name").values('id',
+                                                                                                             'name','slug')
 
-        # Apply pagination to the queryset
+        # Apply pagination manually
         page = self.paginate_queryset(product_queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(page)
 
-        # If pagination is not applied, return all products
-        serializer = self.get_serializer(product_queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Return all products if pagination is not applied
+        return Response(product_queryset, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=['get'], url_path='product-detail')
