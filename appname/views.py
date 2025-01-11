@@ -3001,7 +3001,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # Filter products by the selected category and select only id and name
         product_queryset = Product.objects.filter(product_category=product_category).order_by("name").values('id',
-                                                                                                             'name','slug')
+                                                                                                             'name','slug','nedir','ne_icin_kullanilir')
 
         # Apply pagination manually
         page = self.paginate_queryset(product_queryset)
