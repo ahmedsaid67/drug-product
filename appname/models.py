@@ -370,7 +370,7 @@ class Hatirlatici(models.Model):
     name = models.CharField(max_length=150, null=True, blank=True)
     user = models.ForeignKey(CustomUser, null=True,blank=True, on_delete=models.CASCADE, related_name='hatirlatici_user')
     form = models.CharField(max_length=50, null=True, blank=True)
-    kuvvet = models.CharField(max_length=50, null=True, blank=True)  # 5ml gibi ölçüsü ile birlikte değer olacaktır.
+    kuvvet = models.CharField(max_length=500, null=True, blank=True)  # 5ml gibi ölçüsü ile birlikte değer olacaktır.
     baslangic_tarihi = models.DateField(blank=True, null=True)
     bitis_tarihi = models.DateField(blank=True, null=True)
     is_removed = models.BooleanField(default=False)
