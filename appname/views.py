@@ -1155,7 +1155,7 @@ class ExplanationDozViewSet(viewsets.ModelViewSet):
             df = pd.read_excel(file)
 
             # Check if required columns are present
-            required_columns = ['İLAÇ AD', 'Bilgi', 'durum']
+            required_columns = ['İLAÇ AD', 'Bilgi','Check Uyarı', 'durum']
             if not all(column in df.columns for column in required_columns):
                 return Response({
                     'error': 'Excel file must contain all required columns'
@@ -1176,10 +1176,15 @@ class ExplanationDozViewSet(viewsets.ModelViewSet):
 
                     bilgi = row['Bilgi'] if pd.notna(row['Bilgi']) else None
 
+                    check_uyari = row.get('Check Uyarı', '')
+                    if pd.isna(check_uyari):
+                        check_uyari = ''
+
                     # Create a new KiloDoz object
                     new_explanation = ExplanationDoz(
                         ilac=ilac,
-                        bilgi=bilgi
+                        bilgi=bilgi,
+                        check_uyari=check_uyari
                     )
 
                     # Save the new object
@@ -1194,7 +1199,6 @@ class ExplanationDozViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': f'An error occurred while processing the file: {str(e)}'},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
 
 from .models import HatalikYasDoz
