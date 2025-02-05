@@ -194,6 +194,7 @@ class KiloDoz(models.Model):
 class ExplanationDoz(models.Model):
     ilac = models.ForeignKey(Ilac, null=True, blank=True, on_delete=models.CASCADE)
     bilgi = models.TextField(null=True, blank=True)
+    check_uyari = models.TextField(null=True, blank=True)
 
 
 class HatalikYasDoz(models.Model):
